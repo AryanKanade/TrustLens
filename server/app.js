@@ -8,9 +8,13 @@ require('./config/db');
 //Middleware
 app.use(cors());
 app.use(express.json());
+
+//Routes
+app.use('/api/profile', require('./routes/profileRouter'));
+
+//Health check route
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
-// app.use('/api/investigate', investigateRoutes);
 //port
 const PORT = process.env.PORT || 5000;
 
