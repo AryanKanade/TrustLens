@@ -3,7 +3,10 @@ const {
   getShoppingResults,
   getForumResults,
   getNewsResults,
-  getInstagramProfile
+  getInstagramProfile,
+  searchMapsPlace,
+  getMapsReviews,
+  getWebComplaints
 } = require('../services/serpApiService');
 
 const {
@@ -11,12 +14,13 @@ const {
   scoreImages,
   scoreComplaints,
   scoreAccount,
+  scorePresence,
   combineScores
 } = require('../utils/scoring');
 
 async function startInvestigation(req, res) {
   try {
-    const { handle, imageUrl, askingPrice, brandName } = req.body;
+    const { handle, imageUrl, askingPrice, brandName, addressQuery } = req.body;
 
     if (!handle || !imageUrl || !askingPrice || !brandName) {
       return res.status(400).json({
@@ -24,32 +28,53 @@ async function startInvestigation(req, res) {
       });
     }
 
-    // Run all SerpApi calls in parallel; allSettled so one failure doesn't kill the rest
-    const [profileResult, lensResult, shoppingResult, newsResult, forumResult] =
-      await Promise.allSettled([
-        getInstagramProfile(handle),
-        getLensMatches(imageUrl),
-        getShoppingResults(brandName),
-        getNewsResults(brandName),
-        getForumResults(brandName)
-      ]);
+    // Core calls always run
+    const corePromises = [
+      getInstagramProfile(handle),
+      getLensMatches(imageUrl),
+      getShoppingResults(brandName),
+      getNewsResults(brandName),
+      getForumResults(brandName),
+      getWebComplaints(brandName)
+    ];
+
+    // Maps only runs if the user/frontend supplied an address to check
+    const mapsPromise = addressQuery ? searchMapsPlace(addressQuery) : Promise.resolve(null);
+
+    const results = await Promise.allSettled([...corePromises, mapsPromise]);
+
+    const [profileResult, lensResult, shoppingResult, newsResult, forumResult, webResult, mapsResult] = results;
 
     const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
     const visualMatches = lensResult.status === 'fulfilled' ? lensResult.value : null;
     const shoppingResults = shoppingResult.status === 'fulfilled' ? shoppingResult.value : null;
     const newsResults = newsResult.status === 'fulfilled' ? newsResult.value : null;
     const forumResults = forumResult.status === 'fulfilled' ? forumResult.value : null;
+    const webResults = webResult.status === 'fulfilled' ? webResult.value : null;
+    const mapsResults = mapsResult.status === 'fulfilled' ? mapsResult.value : null;
+
+    // If we found a Maps place, fetch its reviews too (second call, only if needed)
+    let reviews = null;
+    if (mapsResults && Array.isArray(mapsResults) && mapsResults.length > 0 && mapsResults[0].data_id) {
+      try {
+        reviews = await getMapsReviews(mapsResults[0].data_id);
+      } catch (e) {
+        reviews = null; // non-fatal, presence score still works without review text
+      }
+    }
 
     const priceScore = scorePrice(askingPrice, shoppingResults);
     const imageScore = scoreImages(visualMatches);
-    const complaintsScore = scoreComplaints(brandName, newsResults, forumResults);
+    const complaintsScore = scoreComplaints(brandName, newsResults, forumResults, webResults);
     const accountScore = scoreAccount(profile);
+    const presenceScore = scorePresence(mapsResults, reviews);
 
     const final = combineScores({
       price: priceScore,
       images: imageScore,
       complaints: complaintsScore,
-      account: accountScore
+      account: accountScore,
+      presence: presenceScore
     });
 
     const report = {

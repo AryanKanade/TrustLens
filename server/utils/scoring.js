@@ -63,7 +63,7 @@ function scoreImages(visualMatches) {
 
 const SCAM_WORDS = ['scam', 'fraud', 'fake', 'duped', 'cheated', 'ghost seller', 'never delivered', 'did not receive', 'not delivered', 'defrauded'];
 
-function scoreComplaints(brandName, newsResults, forumResults) {
+function scoreComplaints(brandName, newsResults, forumResults, webResults) {
   const name = (brandName || '').toLowerCase();
   let hits = 0;
 
@@ -78,7 +78,8 @@ function scoreComplaints(brandName, newsResults, forumResults) {
   };
 
   checkArray(newsResults, 1);
-  checkArray(forumResults, 2); // forum hits weighted higher, per spec
+  checkArray(forumResults, 2);
+  checkArray(webResults, 1); // general web, same weight as news
 
   let score = 80 - (hits * 20);
   if (score < 0) score = 0;
@@ -123,9 +124,37 @@ function scoreAccount(profile) {
   return { score, scamPhraseHits, followRatio: profile.followers ? Number((profile.following / profile.followers).toFixed(2)) : null };
 }
 
+function scorePresence(mapsResults, reviews) {
+  // mapsResults = array from searchMapsPlace, reviews = array from getMapsReviews
+  // null means "address wasn't claimed / wasn't checked" — not "bad"
+  if (!mapsResults || !Array.isArray(mapsResults) || mapsResults.length === 0) {
+    return null;
+  }
+
+  const place = mapsResults[0]; // best match
+  const rating = typeof place.rating === 'number' ? place.rating : null;
+  const reviewCount = typeof place.reviews === 'number' ? place.reviews : 0;
+
+  let score = 50 + (rating !== null ? (rating - 3) * 10 : 0) + Math.min(20, reviewCount / 10);
+
+  // If we have actual review text, check for complaint words too
+  let negativeReviewHits = 0;
+  if (reviews && Array.isArray(reviews)) {
+    reviews.forEach(r => {
+      const text = (r.snippet || '').toLowerCase();
+      if (SCAM_WORDS.some(word => text.includes(word))) negativeReviewHits++;
+    });
+  }
+  score -= negativeReviewHits * 15; 
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  return { score, rating, reviewCount, negativeReviewHits };
+}
+
 function combineScores(signals) {
   // signals = { price: {...}|null, images: {...}|null, complaints: {...}|null, account: {...}|null }
-  const weights = { price: 29, images: 29, complaints: 24, account: 18 };
+  const weights = { price: 25, images: 25, complaints: 20, account: 15, presence: 15 };
 
   let totalWeight = 0;
   let weightedSum = 0;
@@ -158,4 +187,4 @@ function combineScores(signals) {
   return { trustScore, band, confidence, breakdown };
 }
 
-module.exports = { scorePrice, scoreImages, scoreComplaints, scoreAccount, combineScores };
+module.exports = { scorePrice, scoreImages, scoreComplaints, scoreAccount, scorePresence, combineScores };

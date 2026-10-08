@@ -116,4 +116,22 @@ function getMapsReviews(dataId){
   })
 }
 
-module.exports = { getInstagramProfile , getLensMatches , getShoppingResults , getForumResults , getNewsResults, searchMapsPlace, getMapsReviews };
+function getWebComplaints(query){
+  return new Promise((resolve, reject) => {
+    getJson({
+      engine: "google",
+      q: `${query} scam OR fraud OR complaint`,
+      gl: "in",
+      hl: "en",
+      api_key: process.env.SERPAPI_KEY
+    }, (json) => {
+      if (json.error) {
+        reject(new Error(json.error));
+      } else {
+        resolve(json.organic_results);
+      }
+    })
+  })
+}
+
+module.exports = { getInstagramProfile , getLensMatches , getShoppingResults , getForumResults , getNewsResults, searchMapsPlace, getMapsReviews, getWebComplaints };
