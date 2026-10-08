@@ -12,6 +12,7 @@ app.use(express.json());
 //Routes
 app.use('/api/profile', require('./routes/profileRouter'));
 app.use('/api/investigate', require('./routes/investigateRouter'));
+app.use('/api/reports', require('./routes/reportRouter'));
 
 //Health check route
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))

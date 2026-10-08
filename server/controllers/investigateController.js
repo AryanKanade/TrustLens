@@ -1,3 +1,5 @@
+const { createReport } = require('../models/report');
+
 const {
   getLensMatches,
   getShoppingResults,
@@ -88,7 +90,8 @@ async function startInvestigation(req, res) {
       createdAt: new Date().toISOString()
     };
 
-    res.json(report);
+    const reportId = await createReport(report);
+    res.json({ id: reportId, ...report });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
