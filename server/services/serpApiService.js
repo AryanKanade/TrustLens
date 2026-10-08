@@ -16,4 +16,20 @@ function getInstagramProfile(handle) {
   });
 }
 
-module.exports = { getInstagramProfile };
+function getLensMatches(imageUrl){
+  return new Promise((resolve, reject) => {
+    getJson({
+      engine: "google_lens",
+      url: imageUrl,
+      api_key: process.env.SERPAPI_KEY
+    }, (json) => {
+      if (json.error) {
+        reject(new Error(json.error));
+      } else {
+        resolve(json.visual_matches);
+      }
+    });
+  });
+}
+
+module.exports = { getInstagramProfile , getLensMatches };
