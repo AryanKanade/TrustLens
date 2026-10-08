@@ -1,16 +1,72 @@
-const { getLensMatches, getShoppingResults, getForumResults, getNewsResults, searchMapsPlace, getMapsReviews } = require('../services/serpApiService');
+const {
+  getLensMatches,
+  getShoppingResults,
+  getForumResults,
+  getNewsResults,
+  getInstagramProfile
+} = require('../services/serpApiService');
 
-async function startInvestigation(req, res){
-    try {
-        const { imageUrl } = req.body;
-        if (!imageUrl) {
-            return res.status(400).json({ error: 'Image URL is required' });
-        }
-        const matches = await getLensMatches(imageUrl);
-        res.json({ visualMatches: matches });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+const {
+  scorePrice,
+  scoreImages,
+  scoreComplaints,
+  scoreAccount,
+  combineScores
+} = require('../utils/scoring');
+
+async function startInvestigation(req, res) {
+  try {
+    const { handle, imageUrl, askingPrice, brandName } = req.body;
+
+    if (!handle || !imageUrl || !askingPrice || !brandName) {
+      return res.status(400).json({
+        error: 'handle, imageUrl, askingPrice, and brandName are all required'
+      });
     }
+
+    // Run all SerpApi calls in parallel; allSettled so one failure doesn't kill the rest
+    const [profileResult, lensResult, shoppingResult, newsResult, forumResult] =
+      await Promise.allSettled([
+        getInstagramProfile(handle),
+        getLensMatches(imageUrl),
+        getShoppingResults(brandName),
+        getNewsResults(brandName),
+        getForumResults(brandName)
+      ]);
+
+    const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+    const visualMatches = lensResult.status === 'fulfilled' ? lensResult.value : null;
+    const shoppingResults = shoppingResult.status === 'fulfilled' ? shoppingResult.value : null;
+    const newsResults = newsResult.status === 'fulfilled' ? newsResult.value : null;
+    const forumResults = forumResult.status === 'fulfilled' ? forumResult.value : null;
+
+    const priceScore = scorePrice(askingPrice, shoppingResults);
+    const imageScore = scoreImages(visualMatches);
+    const complaintsScore = scoreComplaints(brandName, newsResults, forumResults);
+    const accountScore = scoreAccount(profile);
+
+    const final = combineScores({
+      price: priceScore,
+      images: imageScore,
+      complaints: complaintsScore,
+      account: accountScore
+    });
+
+    const report = {
+      handle,
+      brandName,
+      askingPrice,
+      trustScore: final.trustScore,
+      band: final.band,
+      confidence: final.confidence,
+      signals: final.breakdown,
+      createdAt: new Date().toISOString()
+    };
+
+    res.json(report);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 }
 
 async function checkPrice(req, res) {
