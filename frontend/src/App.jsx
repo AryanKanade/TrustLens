@@ -1,122 +1,201 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
+import { getProfile, startInvestigation } from './api';
+import SearchForm from './components/SearchForm';
+import ProfileCard from './components/ProfileCard';
+import PostGrid from './components/PostGrid';
+import InvestigateForm from './components/InvestigateForm';
+import InvestigationLoader from './components/InvestigationLoader';
+import ReportScreen from './components/ReportScreen';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // ── Screen 1 state ────────────────────────────────────
+  const [searchStatus, setSearchStatus] = useState('idle'); // idle | loading | error | success
+  const [searchError, setSearchError] = useState(null);
+  const [handle, setHandle] = useState('');
+  const [profile, setProfile] = useState(null);
+
+  // ── Screen 2 state ────────────────────────────────────
+  const [screen, setScreen] = useState('search'); // search | postPicker | investigating | result
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [investigateError, setInvestigateError] = useState(null);
+  const [report, setReport] = useState(null);
+
+  // ── Screen 1: look up profile ─────────────────────────
+  async function handleSearch(inputHandle) {
+    setSearchStatus('loading');
+    setSearchError(null);
+    setProfile(null);
+    setHandle(inputHandle);
+
+    try {
+      const data = await getProfile(inputHandle);
+      setProfile(data.profile);
+      setSearchStatus('success');
+      setScreen('postPicker');
+    } catch (err) {
+      setSearchError(
+        err.message || "Couldn't find this account — check the handle and try again."
+      );
+      setSearchStatus('error');
+    }
+  }
+
+  // ── Screen 2: run investigation ───────────────────────
+  async function handleInvestigate({ askingPrice, brandName, addressQuery }) {
+    setScreen('investigating');
+    setInvestigateError(null);
+
+    const imageUrl = selectedPost.serpapi_display_url || selectedPost.display_url;
+
+    try {
+      const data = await startInvestigation({
+        handle,
+        imageUrl,
+        askingPrice,
+        brandName,
+        addressQuery,
+      });
+      setReport(data);
+      setScreen('result');
+    } catch (err) {
+      setInvestigateError(
+        err.message || 'Investigation failed — please try again.'
+      );
+      setScreen('postPicker'); // go back so they can retry
+    }
+  }
+
+  // ── Reset to Screen 1 ────────────────────────────────
+  function handleReset() {
+    setSearchStatus('idle');
+    setSearchError(null);
+    setHandle('');
+    setProfile(null);
+    setScreen('search');
+    setSelectedPost(null);
+    setInvestigateError(null);
+    setReport(null);
+  }
+
+  // ── Back to post picker from investigating error ──────
+  function handleBackToSearch() {
+    setScreen('search');
+    setSearchStatus('idle');
+    setProfile(null);
+    setSelectedPost(null);
+    setInvestigateError(null);
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="border-b border-slate-200 bg-white">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-2.5">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <ShieldCheck size={22} className="text-slate-700" />
+            <span className="text-base font-semibold text-slate-900 tracking-tight">
+              TrustLens
+            </span>
+          </button>
         </div>
-        <div className="text-4xl text-blue-600">
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      {/* ═══ Main content ═══ */}
+      <main className="flex-1 flex flex-col items-center px-6 pt-12 pb-16">
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* ─── Screen 1: Search ─── */}
+        {screen === 'search' && (
+          <div className="w-full flex flex-col items-center pt-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-2">
+              Is this seller legit?
+            </h1>
+            <p className="text-sm sm:text-base text-slate-500 text-center mb-10 max-w-md">
+              Enter an Instagram seller's handle to check their trust signals
+              before you buy.
+            </p>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <SearchForm onSubmit={handleSearch} isLoading={searchStatus === 'loading'} />
+
+            {searchStatus === 'error' && (
+              <div className="mt-6 w-full max-w-md flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+                <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">{searchError}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Screen 2: Post Picker ─── */}
+        {screen === 'postPicker' && profile && (
+          <div className="w-full max-w-lg">
+            {/* Back link */}
+            <button
+              onClick={handleBackToSearch}
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              Back to search
+            </button>
+
+            {/* Profile context */}
+            <ProfileCard profile={profile} />
+
+            {/* Investigation error (if retrying) */}
+            {investigateError && (
+              <div className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+                <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">{investigateError}</p>
+              </div>
+            )}
+
+            {/* Post grid */}
+            <div className="mt-6">
+              <PostGrid
+                posts={profile.posts}
+                selectedPost={selectedPost}
+                onSelect={setSelectedPost}
+              />
+            </div>
+
+            {/* Investigation form — appears after selecting a post */}
+            {selectedPost && (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <p className="text-sm font-medium text-slate-700 mb-4">
+                  Tell us about the product
+                </p>
+                <InvestigateForm
+                  onSubmit={handleInvestigate}
+                  isLoading={false}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Investigating loader ─── */}
+        {screen === 'investigating' && (
+          <InvestigationLoader />
+        )}
+
+        {/* ─── Screen 3: Report ─── */}
+        {screen === 'result' && report && (
+          <ReportScreen report={report} onReset={handleReset} />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-4">
+        <p className="text-xs text-slate-400 text-center">
+          TrustLens — automated risk estimate based on public data, not a legal verdict.
+        </p>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
