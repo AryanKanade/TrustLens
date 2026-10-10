@@ -1,10 +1,7 @@
 # TrustLens
+**A 60-second, evidence-backed trust check for Instagram sellers — built for SerpApi India Hackathon 2026.**
 TrustLens checks an Instagram shop's trust before you pay — stolen product photos, inflated prices, scam complaints, and seller legitimacy, all backed by live evidence links. Built for the SerpApi India Hackathon 2026 (Knowledge & Public Interest track).
 
-
-# TrustLens
-
-**A 60-second, evidence-backed trust check for Instagram sellers — built for SerpApi India Hackathon 2026.**
 
 ## What it does
 
@@ -34,8 +31,11 @@ All five signals combine into a single 0–100 trust score with a risk band (Loo
 ## Project structure
 
 TrustLens/
+
 ├─ server/ — Express API, scoring engine, MySQL persistence
+
 ├─ frontend/ — React + Tailwind UI
+
 └─ docs/ — project specs
 
 
@@ -61,10 +61,15 @@ cp .env.example .env
 Edit `server/.env` with your real SerpApi key and MySQL credentials:
 
 PORT=5000
+
 SERPAPI_KEY=your_actual_serpapi_key
+
 DB_HOST=localhost
+
 DB_USER=root
+
 DB_PASSWORD=your_mysql_password
+
 DB_NAME=trustlens
 
 
