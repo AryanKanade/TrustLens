@@ -1,3 +1,7 @@
+# Development process
+
+This spec was written before frontend development and given to Antigravity as the build brief — kept here for documentation of the development process.
+
 # TrustLens Frontend Spec
 
 ## What this app does

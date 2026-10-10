@@ -1,50 +1,135 @@
-# TrustLens
-**A 60-second, evidence-backed trust check for Instagram sellers — built for SerpApi India Hackathon 2026.**
+<div align="center">
+
+# 🛡️ TrustLens
+
+### A 60-second, evidence-backed trust check for Instagram sellers
+
+*Built for SerpApi India Hackathon 2026 — Knowledge & Public Interest Track*
 TrustLens checks an Instagram shop's trust before you pay — stolen product photos, inflated prices, scam complaints, and seller legitimacy, all backed by live evidence links. Built for the SerpApi India Hackathon 2026 (Knowledge & Public Interest track).
 
+![Node.js](https://img.shields.io/badge/Node.js-v24-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwindcss&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
+![SerpApi](https://img.shields.io/badge/Powered%20by-SerpApi-FF6B35)
 
-## What it does
+</div>
 
-TrustLens helps online shoppers in India decide whether to trust an Instagram shop before paying. 
-Enter a seller's Instagram handle and the product they're selling, and TrustLens checks:
+---
 
-- **Price Fairness** — compares the asking price against the real market median (Google Shopping)
-- **Photo Originality** — checks if product photos are stolen from known dropshipping/resale sites (Google Lens)
-- **Complaints** — scans news, forums, and the web for scam-related mentions of the seller (Google News, Google Forums, Google Search)
-- **Account Health** — evaluates the Instagram profile for red flags: suspicious follower ratios, scam phrases in captions, verification status (Instagram Profile API)
-- **Store Presence** — verifies a claimed physical address and checks real customer reviews (Google Maps, Google Maps Reviews)
+## 🧩 The Problem
 
-All five signals combine into a single 0–100 trust score with a risk band (Looks Reliable / Some Concerns / High Risk / Avoid), each backed by real evidence links — never a bare accusation.
+Every day, thousands of Indian shoppers buy from Instagram shops — small sellers with no storefront, no reviews platform, and no easy way to verify if they're real. Stolen product photos, inflated prices, and fly-by-night accounts cost real people real money, and there's no quick way to check before paying.
 
-**Who it's for:** everyday online shoppers in India who encounter Instagram-based sellers and have no quick way to verify legitimacy before paying.
+## 💡 What TrustLens Does
 
-## Track
+Paste a seller's Instagram handle and the product you're considering. In under a minute, TrustLens investigates like a detective across **8 SerpApi engines** and returns a single trust score (0–100) with a risk band — backed by real, linked evidence for every claim.
 
-**Knowledge & Public Interest**
+| Signal | What it checks |
+|---|---|
+| 💰 **Price Fairness** | Is the asking price in line with real market listings, or is it a bait-pricing trap? |
+| 📸 **Photo Originality** | Are the product photos original, or stolen from known dropshipping/resale sites? |
+| 🚩 **Complaints** | Does the brand show up in news, forums, or the web alongside scam-related language? |
+| 👤 **Account Health** | Follower/following ratios, verification status, scam phrases in captions |
+| 📍 **Store Presence** | If a physical address is claimed, is it real — and what do actual customer reviews say? |
 
-## Tech stack
+## ✨ Features
 
-- **Backend:** Node.js, Express, MySQL (`mysql2`)
-- **Frontend:** React (Vite), Tailwind CSS
-- **Data:** SerpApi (`serpapi` npm SDK)
+- **5-signal trust scoring** across price, photos, complaints, account health, and physical presence
+- **Graceful handling of missing data** — if a signal can't be checked (e.g. no address claimed), it's excluded and weights renormalize, never penalizing a seller for data that isn't available
+- **Evidence-backed, not just a verdict** — every signal shows the real numbers behind it (market median price, review counts, match counts), not a black-box label
+- **Persisted reports** — every investigation is saved to MySQL with a permanent ID
+- **🔗 Shareable report links** — every report gets a unique URL (`/report/:id`) that can be copied and sent to anyone (family, friends) so they can see the exact same trust report instantly, without re-running the investigation
+- **Clean, focused 3-screen flow** — search → pick a product → see the verdict, with no account creation or login required
 
-## Project structure
+## 🏗️ System Architecture
 
+```mermaid
+flowchart TD
+    A[User enters Instagram handle] --> B[React Frontend]
+    B -->|POST /api/profile/get-profile| C[Express Backend]
+    C -->|instagram_profile| D[(SerpApi)]
+    D --> C
+    C --> B
+    B -->|user picks a post + enters price/brand| E[POST /api/investigate/start-investigation]
+    E --> F[Backend: Parallel SerpApi Calls]
+
+    F --> G1[google_lens]
+    F --> G2[google_shopping]
+    F --> G3[google_news]
+    F --> G4[google_forums]
+    F --> G5[google - web fallback]
+    F --> G6[google_maps]
+    G6 --> G7[google_maps_reviews]
+
+    G1 --> H[Scoring Engine]
+    G2 --> H
+    G3 --> H
+    G4 --> H
+    G5 --> H
+    G7 --> H
+
+    H -->|scorePrice, scoreImages,<br/>scoreComplaints, scoreAccount,<br/>scorePresence| I[combineScores:<br/>weighted trust score + band]
+
+    I --> J[(MySQL: reports table)]
+    I --> K[Report returned to Frontend]
+    K --> L[Screen 3: Trust Report UI]
+    J -->|GET /api/reports/:id| M[🔗 Shareable Report Link]
+    M --> L
+```
+
+### How it works, step by step
+
+1. **Profile lookup** — the seller's Instagram handle is fetched via `instagram_profile`, returning bio, followers, verification status, and recent posts
+2. **Investigation** — once a product post and price are selected, the backend fires 6–8 SerpApi calls **in parallel** (`Promise.allSettled`, so one failed call never breaks the whole investigation)
+3. **Scoring** — each signal is scored 0–100 independently by a dedicated pure function; missing data returns `null` rather than a fake score
+4. **Combination** — `combineScores()` computes a weighted average across only the signals that returned data, renormalizing weights so confidence is always honestly reported
+5. **Persistence** — the final report is saved to MySQL with a UUID, enabling it to be fetched again later via `GET /api/reports/:id`
+6. **Sharing** — that same UUID powers a shareable report link (`/report/:id`) on the frontend, so a saved report can be reopened and shown to anyone, not just the person who ran the check
+
+## 🔗 Shareable Reports
+
+Every completed investigation generates a permanent link:
+```
+https://your-deployed-url.com/report/<report-id>
+```
+Clicking **"Copy share link"** on any report copies this URL. Opening it — on any device, at any time — fetches the saved report from MySQL and renders the exact same trust score and evidence, so a warning or a green light can be forwarded directly, e.g. over WhatsApp, before a family member makes a purchase.
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, Express, MySQL (`mysql2`) |
+| Frontend | React (Vite), Tailwind CSS |
+| Data | SerpApi (official `serpapi` Node SDK) |
+
+## 📁 Project Structure
+
+```
 TrustLens/
+├─ server/
+│  ├─ app.js                     — Express app entry point
+│  ├─ config/db.js               — MySQL connection pool
+│  ├─ routes/                    — profile, investigate, report routers
+│  ├─ controllers/                — request handlers
+│  ├─ services/serpApiService.js — all 8 SerpApi engine calls
+│  ├─ utils/scoring.js           — the scoring engine (5 signal scorers + combiner)
+│  ├─ models/report.js           — MySQL read/write for reports
+│  ├─ scripts/setupDb.js         — one-command DB + schema setup
+│  └─ schema.sql
+├─ frontend/
+│  └─ src/                       — React components for all 3 screens
+└─ docs/
+   └─ FRONTEND_SPEC.md           — the spec written before frontend development
+```
 
-├─ server/ — Express API, scoring engine, MySQL persistence
-
-├─ frontend/ — React + Tailwind UI
-
-└─ docs/ — project specs
-
-
-## Setup instructions
+## ⚙️ Setup Instructions
 
 ### Prerequisites
 - Node.js v24+ (tested on v24.12.0)
 - MySQL Server running locally (or any reachable MySQL instance)
-- A SerpApi account and API key: https://serpapi.com
+- A SerpApi account and API key → https://serpapi.com
 
 ### 1. Clone the repo
 ```bash
@@ -58,22 +143,17 @@ cd server
 npm install
 cp .env.example .env
 ```
-Edit `server/.env` with your real SerpApi key and MySQL credentials:
-
+Edit `server/.env` with your real credentials:
+```
 PORT=5000
-
 SERPAPI_KEY=your_actual_serpapi_key
-
 DB_HOST=localhost
-
 DB_USER=root
-
 DB_PASSWORD=your_mysql_password
-
 DB_NAME=trustlens
+```
 
-
-Create the database and tables with one command:
+Create the database and tables in one command:
 ```bash
 npm run setup-db
 ```
@@ -82,7 +162,7 @@ Start the backend:
 ```bash
 npm run dev
 ```
-Server runs on `http://localhost:5000`. You should see `Server is running on port 5000` and `MySQL connected`.
+Runs on `http://localhost:5000` — confirm you see `Server is running on port 5000` and `MySQL connected`.
 
 ### 3. Frontend setup
 In a new terminal:
@@ -91,9 +171,10 @@ cd frontend
 npm install
 cp .env.example .env
 ```
-`frontend/.env` already defaults correctly for local development:
+`frontend/.env` defaults correctly for local dev:
+```
 VITE_API_BASE_URL=http://localhost:5000
-
+```
 
 Start the frontend:
 ```bash
@@ -101,33 +182,35 @@ npm run dev
 ```
 Open the URL shown (typically `http://localhost:5173`).
 
-### 4. Use it
-1. Enter a public Instagram handle (e.g. a real shop's handle)
+### 4. Try it
+1. Enter a public Instagram handle
 2. Pick a product post from their grid
 3. Enter the asking price, a product/brand search term, and optionally the claimed store address
-4. Click "Run trust check" — the investigation takes 5–10 seconds (multiple SerpApi calls happen server-side)
-5. View the trust score, band, and per-signal evidence
+4. Click **Run trust check** — takes 5–10 seconds (multiple SerpApi calls run server-side)
+5. View the trust score, band, and evidence per signal — then copy the share link to send it to anyone
 
-## SerpApi usage
+## 📡 SerpApi Usage
 
-| SerpApi Engine | Role in TrustLens |
+| Engine | Role |
 |---|---|
-| `instagram_profile` | Fetches the seller's bio, followers, following, verification status, and recent posts (used for the Account Health signal and to populate the post picker) |
-| `google_lens` | Reverse-image-checks the selected product photo to detect if it's stolen from known dropshipping/resale platforms (Photo Originality signal) |
-| `google_shopping` | Finds real market listings for the product to compute a fair median price (Price Fairness signal) |
-| `google_news` | Searches for news coverage mentioning the brand alongside scam-related keywords (Complaints signal) |
-| `google_forums` | Searches forum discussions for scam/fraud mentions of the brand (Complaints signal) |
-| `google` (web search) | Fallback complaint search across the general web — review sites, blogs, social mentions the Forums engine misses (Complaints signal) |
-| `google_maps` | Searches for the seller's claimed physical store location (Store Presence signal) |
-| `google_maps_reviews` | Fetches real customer reviews for that location to check rating and scan for complaint language (Store Presence signal) |
+| `instagram_profile` | Seller bio, followers, verification, recent posts |
+| `google_lens` | Detects stolen/resold product photos |
+| `google_shopping` | Real market price comparison |
+| `google_news` | Scam-related news mentions |
+| `google_forums` | Scam-related forum discussions |
+| `google` (web search) | Fallback complaint search across the wider web |
+| `google_maps` | Verifies a claimed physical store location |
+| `google_maps_reviews` | Real customer reviews for that location |
 
-All calls are made server-side via the official `serpapi` Node.js SDK, wrapped in `server/services/serpApiService.js`.
+All calls happen server-side via the official `serpapi` Node.js SDK (`server/services/serpApiService.js`) — never exposed to the client.
 
-## Scoring methodology
+## ⚖️ Disclaimer
 
-Each signal returns a 0–100 score (or `null` if data wasn't available for that seller). The final trust score is a weighted average of all available signals — null signals are excluded and weights are renormalized, so a seller missing one data point (e.g. no claimed address) is never unfairly penalized. See `server/utils/scoring.js` for the full logic.
+TrustLens provides an automated risk estimate based on public data. It is **not** a legal verdict. Always verify independently before purchasing from any seller.
 
-## Disclaimer
+## 🤖 AI Tools Used
 
-TrustLens provides an automated risk estimate based on public data. It is not a legal verdict. Always verify independently before purchasing from any seller.
+- **Claude (Anthropic)** — used as a planning and code-review partner throughout backend development. All backend code (routes, controllers, the SerpApi service layer, the scoring engine, MySQL persistence) was written, debugged, and tested personally by the developer; Claude explained concepts, caught bugs, and suggested fixes that were then implemented and verified manually via Postman.
+- **Antigravity** — an AI coding agent used to build the frontend UI (React + Tailwind), guided by a detailed specification (`docs/FRONTEND_SPEC.md`) written in advance defining the exact API contract, screen flows, and visual direction. Every feature was reviewed and tested against the working backend before being accepted.
 
+Full responsibility for all submitted code is taken by the developer, who understands and can explain or modify any part of it.
