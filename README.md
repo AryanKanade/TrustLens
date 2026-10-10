@@ -5,6 +5,7 @@
 ### A 60-second, evidence-backed trust check for Instagram sellers
 
 *Built for SerpApi India Hackathon 2026 — Knowledge & Public Interest Track*
+
 TrustLens checks an Instagram shop's trust before you pay — stolen product photos, inflated prices, scam complaints, and seller legitimacy, all backed by live evidence links. Built for the SerpApi India Hackathon 2026 (Knowledge & Public Interest track).
 
 ![Node.js](https://img.shields.io/badge/Node.js-v24-339933?logo=nodedotjs&logoColor=white)
