@@ -36,12 +36,17 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #ffffff;
-  color: var(--color-slate-800);
+  background-color: #f8fafc;
+  color: #334155;
+  line-height: 1.6;
 }
 
-input:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--color-slate-400);
-  outline-offset: 2px;
+/* Remove default number input spinners for a cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }

@@ -135,44 +135,41 @@ export default function SignalCard({ signalKey, data }) {
   return (
     <div
       className={`
-        rounded-xl border p-5
+        rounded-xl border p-5 transition-all duration-200
         ${isNull
-          ? 'border-slate-100 bg-slate-50'
-          : 'border-slate-200 bg-white'
+          ? 'border-slate-200/60 bg-slate-50/50'
+          : 'border-slate-200 bg-white hover:shadow-md hover:border-slate-300'
         }
       `}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         {/* Left: icon + label + explanation */}
-        <div className="flex items-start gap-3 min-w-0">
+        <div className="flex items-start gap-4 min-w-0">
           <div
             className={`
-              mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
-              ${isNull ? 'bg-slate-100' : 'bg-slate-100'}
+              flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center
+              ${isNull ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700'}
             `}
           >
-            <Icon
-              size={16}
-              className={isNull ? 'text-slate-300' : 'text-slate-500'}
-            />
+            <Icon size={22} strokeWidth={2.5} />
           </div>
 
-          <div className="min-w-0">
-            <h3
-              className={`text-sm font-semibold leading-tight ${
-                isNull ? 'text-slate-400' : 'text-slate-800'
+          <div className="min-w-0 pt-0.5">
+            <h4
+              className={`text-base font-semibold leading-tight ${
+                isNull ? 'text-slate-500' : 'text-slate-900'
               }`}
             >
               {meta.label}
-            </h3>
+            </h4>
 
             {isNull ? (
-              <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                <Minus size={12} />
+              <p className="text-sm font-medium text-slate-400 mt-1 flex items-center gap-1.5">
+                <Minus size={14} strokeWidth={3} />
                 Not checked
               </p>
             ) : (
-              <p className="text-sm text-slate-500 mt-1 leading-snug">
+              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
                 {getExplanation(signalKey, data)}
               </p>
             )}
@@ -181,14 +178,16 @@ export default function SignalCard({ signalKey, data }) {
 
         {/* Right: score badge */}
         {!isNull && (
-          <div className="flex-shrink-0 text-right">
+          <div className="flex-shrink-0 text-right flex flex-col items-end justify-center">
             <span
-              className="text-lg font-bold tabular-nums leading-none"
+              className="text-2xl font-black tabular-nums leading-none tracking-tight"
               style={{ color: scoreColor(data.score) }}
             >
               {data.score}
             </span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">/ 100</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+              Score
+            </span>
           </div>
         )}
       </div>

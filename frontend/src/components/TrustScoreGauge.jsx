@@ -15,8 +15,8 @@ export default function TrustScoreGauge({ score, band }) {
   const circleRef = useRef(null);
   const config = BAND_CONFIG[band] || BAND_CONFIG['High Risk'];
 
-  const size = 180;
-  const strokeWidth = 10;
+  const size = 200;
+  const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const targetOffset = circumference - (score / 100) * circumference;
@@ -32,7 +32,7 @@ export default function TrustScoreGauge({ score, band }) {
     // Force reflow before applying the transition
     el.getBoundingClientRect();
 
-    el.style.transition = 'stroke-dashoffset 1.2s ease-out';
+    el.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
     el.style.strokeDashoffset = `${targetOffset}`;
   }, [score, circumference, targetOffset]);
 
@@ -42,7 +42,7 @@ export default function TrustScoreGauge({ score, band }) {
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="-rotate-90"
+        className="-rotate-90 drop-shadow-sm"
       >
         {/* Track */}
         <circle
@@ -69,15 +69,15 @@ export default function TrustScoreGauge({ score, band }) {
       </svg>
 
       {/* Center text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-1">
         <span
-          className="text-5xl font-bold tabular-nums leading-none"
+          className="text-6xl font-black tabular-nums leading-none tracking-tighter"
           style={{ color: config.color }}
         >
           {score}
         </span>
-        <span className="text-xs font-medium text-slate-400 mt-1 tracking-wide uppercase">
-          / 100
+        <span className="text-sm font-bold text-slate-400 mt-1 tracking-widest uppercase">
+          Score
         </span>
       </div>
     </div>

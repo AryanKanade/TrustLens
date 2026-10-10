@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Loader2, Search } from 'lucide-react';
 
+const INPUT_CLASSES = `
+  w-full rounded-lg border border-slate-200 bg-white
+  py-2.5 px-3.5 text-base text-slate-800
+  placeholder:text-slate-400
+  transition-all duration-150
+  hover:border-slate-300
+  focus:border-slate-400 focus:ring-4 focus:ring-slate-100 focus:outline-none
+  disabled:opacity-60 disabled:cursor-not-allowed
+`;
+
 export default function InvestigateForm({ onSubmit, isLoading }) {
   const [askingPrice, setAskingPrice] = useState('');
   const [brandName, setBrandName] = useState('');
@@ -20,10 +30,10 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4 mt-5">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       {/* Asking price */}
       <div>
-        <label htmlFor="asking-price" className="block text-sm font-medium text-slate-600 mb-1.5">
+        <label htmlFor="asking-price" className="block text-sm font-medium text-slate-700 mb-1.5">
           Asking price (₹)
         </label>
         <input
@@ -35,21 +45,13 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
           onChange={(e) => setAskingPrice(e.target.value)}
           placeholder="e.g. 2499"
           disabled={isLoading}
-          className="
-            w-full rounded-lg border border-slate-200 bg-white
-            py-2.5 px-3.5 text-base text-slate-800
-            placeholder:text-slate-400
-            transition-colors duration-150
-            hover:border-slate-300
-            focus:border-slate-400 focus:ring-0 focus:outline-none
-            disabled:opacity-60 disabled:cursor-not-allowed
-          "
+          className={INPUT_CLASSES}
         />
       </div>
 
       {/* Brand / product name */}
       <div>
-        <label htmlFor="brand-name" className="block text-sm font-medium text-slate-600 mb-1.5">
+        <label htmlFor="brand-name" className="block text-sm font-medium text-slate-700 mb-1.5">
           Product / brand name
         </label>
         <input
@@ -59,17 +61,9 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
           onChange={(e) => setBrandName(e.target.value)}
           placeholder="e.g. Nike Air Max Muse"
           disabled={isLoading}
-          className="
-            w-full rounded-lg border border-slate-200 bg-white
-            py-2.5 px-3.5 text-base text-slate-800
-            placeholder:text-slate-400
-            transition-colors duration-150
-            hover:border-slate-300
-            focus:border-slate-400 focus:ring-0 focus:outline-none
-            disabled:opacity-60 disabled:cursor-not-allowed
-          "
+          className={INPUT_CLASSES}
         />
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1.5 text-xs text-slate-400">
           What would you search to find this product online?
         </p>
       </div>
@@ -87,7 +81,7 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
         </button>
 
         {showAddress && (
-          <div className="mt-2">
+          <div className="mt-2.5">
             <input
               id="address-query"
               type="text"
@@ -95,17 +89,9 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
               onChange={(e) => setAddressQuery(e.target.value)}
               placeholder="e.g. 12 MG Road, Bengaluru"
               disabled={isLoading}
-              className="
-                w-full rounded-lg border border-slate-200 bg-white
-                py-2.5 px-3.5 text-base text-slate-800
-                placeholder:text-slate-400
-                transition-colors duration-150
-                hover:border-slate-300
-                focus:border-slate-400 focus:ring-0 focus:outline-none
-                disabled:opacity-60 disabled:cursor-not-allowed
-              "
+              className={INPUT_CLASSES}
             />
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1.5 text-xs text-slate-400">
               If the seller claims a store address, enter it to verify.
             </p>
           </div>
@@ -120,9 +106,11 @@ export default function InvestigateForm({ onSubmit, isLoading }) {
           w-full flex items-center justify-center gap-2
           rounded-lg bg-slate-900 px-5 py-3
           text-sm font-semibold text-white
-          transition-colors duration-150
+          shadow-sm
+          transition-all duration-150
           hover:bg-slate-800
-          disabled:opacity-50 disabled:cursor-not-allowed
+          active:scale-[0.98]
+          disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
           cursor-pointer
         "
       >

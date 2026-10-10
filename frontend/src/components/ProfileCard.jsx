@@ -20,44 +20,44 @@ export default function ProfileCard({ profile }) {
   } = profile;
 
   return (
-    <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 mt-6">
+    <div className="w-full rounded-xl border border-slate-200 bg-slate-50/80 p-5">
       {/* Name + badges */}
       <div className="flex items-center gap-2 mb-1">
-        <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+        <h2 className="text-base font-semibold text-slate-900 leading-tight">
           {full_name || 'Unnamed account'}
         </h2>
         {is_verified && (
           <span title="Verified account" className="text-blue-500 flex-shrink-0">
-            <BadgeCheck size={18} />
+            <BadgeCheck size={17} />
           </span>
         )}
         {is_professional_account && (
           <span
             title="Professional account"
-            className="text-slate-500 flex-shrink-0"
+            className="text-slate-400 flex-shrink-0"
           >
-            <Briefcase size={16} />
+            <Briefcase size={15} />
           </span>
         )}
       </div>
 
       {/* Bio */}
       {biography && (
-        <p className="text-sm text-slate-500 mb-4 line-clamp-3 whitespace-pre-line">
+        <p className="text-sm text-slate-500 mb-4 line-clamp-3 whitespace-pre-line leading-relaxed">
           {biography}
         </p>
       )}
 
       {/* Stats */}
-      <div className="flex items-center gap-6 text-sm text-slate-600">
+      <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-1.5">
           <Users size={14} className="text-slate-400" />
-          <span className="font-medium text-slate-800">{formatCount(followers)}</span>
+          <span className="font-semibold text-slate-800">{formatCount(followers)}</span>
           <span className="text-slate-500">followers</span>
         </div>
         <div className="flex items-center gap-1.5">
           <UserCheck size={14} className="text-slate-400" />
-          <span className="font-medium text-slate-800">{formatCount(following)}</span>
+          <span className="font-semibold text-slate-800">{formatCount(following)}</span>
           <span className="text-slate-500">following</span>
         </div>
       </div>

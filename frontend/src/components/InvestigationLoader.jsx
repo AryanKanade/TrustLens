@@ -25,29 +25,31 @@ export default function InvestigationLoader() {
   }, []);
 
   return (
-    <div className="w-full max-w-lg mx-auto flex flex-col items-center py-20 px-6">
-      <Loader2 size={32} className="text-slate-400 animate-spin mb-6" />
+    <div className="w-full max-w-[660px] mx-auto">
+      <div className="w-full rounded-2xl border border-slate-200 bg-white p-12 sm:p-16 shadow-sm flex flex-col items-center">
+        <Loader2 size={40} className="text-slate-400 animate-spin mb-6" strokeWidth={2.5} />
 
-      <p className="text-base font-medium text-slate-700 text-center transition-opacity duration-300">
-        {STEPS[stepIndex]}
-      </p>
+        <p className="text-lg font-bold text-slate-800 text-center transition-opacity duration-300">
+          {STEPS[stepIndex]}
+        </p>
 
-      {/* Progress dots */}
-      <div className="flex items-center gap-1.5 mt-6">
-        {STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`
-              h-1.5 rounded-full transition-all duration-300
-              ${i <= stepIndex ? 'w-5 bg-slate-600' : 'w-1.5 bg-slate-200'}
-            `}
-          />
-        ))}
+        {/* Progress dots */}
+        <div className="flex items-center gap-2 mt-8">
+          {STEPS.map((_, i) => (
+            <div
+              key={i}
+              className={`
+                h-1.5 rounded-full transition-all duration-300
+                ${i <= stepIndex ? 'w-6 bg-slate-800' : 'w-2 bg-slate-200'}
+              `}
+            />
+          ))}
+        </div>
+
+        <p className="text-sm font-medium text-slate-500 mt-8 text-center">
+          This usually takes 5–10 seconds
+        </p>
       </div>
-
-      <p className="text-xs text-slate-400 mt-6 text-center">
-        This usually takes 5–10 seconds
-      </p>
     </div>
   );
 }

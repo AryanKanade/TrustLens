@@ -11,10 +11,10 @@ export default function PostGrid({ posts, selectedPost, onSelect }) {
 
   return (
     <div>
-      <p className="text-sm font-medium text-slate-600 mb-3">
+      <p className="text-sm font-medium text-slate-700 mb-3">
         Select the product post you're interested in
       </p>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-3 gap-2.5">
         {posts.map((post) => {
           const isSelected = selectedPost?.id === post.id;
           const imgSrc = post.serpapi_display_url || post.display_url || post.thumbnail_src;
@@ -25,12 +25,12 @@ export default function PostGrid({ posts, selectedPost, onSelect }) {
               type="button"
               onClick={() => onSelect(post)}
               className={`
-                relative aspect-square rounded-lg overflow-hidden
+                relative aspect-square rounded-xl overflow-hidden
                 border-2 transition-all duration-150 cursor-pointer
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2
                 ${isSelected
-                  ? 'border-slate-900 ring-1 ring-slate-900'
-                  : 'border-transparent hover:border-slate-300'
+                  ? 'border-slate-900 shadow-md'
+                  : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
                 }
               `}
             >
@@ -56,9 +56,9 @@ export default function PostGrid({ posts, selectedPost, onSelect }) {
 
               {/* Selected overlay */}
               {isSelected && (
-                <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center">
-                  <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center">
-                    <Check size={16} className="text-slate-900" />
+                <div className="absolute inset-0 bg-slate-900/25 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center">
+                    <Check size={16} className="text-slate-900" strokeWidth={2.5} />
                   </div>
                 </div>
               )}

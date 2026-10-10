@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 /**
  * Fetch a seller's Instagram profile.
@@ -43,6 +43,25 @@ export async function startInvestigation({ handle, imageUrl, askingPrice, brandN
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Investigation failed — please try again.');
+  }
+
+  return res.json();
+}
+
+/**
+ * Fetch a previously saved report by ID.
+ * @param {string} id — report UUID
+ * @returns {Promise<object>} — report data
+ */
+export async function getReport(id) {
+  const res = await fetch(`${BASE_URL}/api/reports/${id}`);
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 404) {
+      throw new Error('REPORT_NOT_FOUND');
+    }
+    throw new Error(body.error || 'Failed to load report.');
   }
 
   return res.json();
