@@ -41,7 +41,8 @@ async function startInvestigation(req, res) {
     ];
 
     // Maps only runs if the user/frontend supplied an address to check
-    const mapsPromise = addressQuery ? searchMapsPlace(addressQuery) : Promise.resolve(null);
+    const sellerName = handle; // or could use profile's full_name once fetched, but handle works as a reasonable proxy
+const mapsPromise = addressQuery ? searchMapsPlace(`${sellerName} ${addressQuery}`) : Promise.resolve(null);
 
     const results = await Promise.allSettled([...corePromises, mapsPromise]);
 
