@@ -93,8 +93,10 @@ function searchMapsPlace(query){
     }, (json) => {
       if (json.error) {
         reject(new Error(json.error));
+      } else if (json.place_results) {
+        resolve([json.place_results]);
       } else {
-        resolve(json.local_results);
+        resolve(json.local_results || null);
       }
     })
   })
