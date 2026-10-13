@@ -5,6 +5,14 @@ const cors = require('cors');
 const app = express();
 require('./config/db');
 
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 //Middleware
 app.use(cors());
 app.use(express.json());

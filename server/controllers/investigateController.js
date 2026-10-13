@@ -1,4 +1,5 @@
 const { createReport } = require('../models/report');
+const { withTimeout } = require('../utils/timeout');
 
 const {
   getLensMatches,
@@ -32,17 +33,17 @@ async function startInvestigation(req, res) {
 
     // Core calls always run
     const corePromises = [
-      getInstagramProfile(handle),
-      getLensMatches(imageUrl),
-      getShoppingResults(brandName),
-      getNewsResults(brandName),
-      getForumResults(brandName),
-      getWebComplaints(brandName)
+      withTimeout(getInstagramProfile(handle)),
+      withTimeout(getLensMatches(imageUrl)),
+      withTimeout(getShoppingResults(brandName)),
+      withTimeout(getNewsResults(brandName)),
+      withTimeout(getForumResults(brandName)),
+      withTimeout(getWebComplaints(brandName))
     ];
 
     // Maps only runs if the user/frontend supplied an address to check
     const sellerName = handle; // or could use profile's full_name once fetched, but handle works as a reasonable proxy
-    const mapsPromise = addressQuery ? searchMapsPlace(`${sellerName} ${addressQuery}`) : Promise.resolve(null);
+    const mapsPromise = addressQuery ? withTimeout(searchMapsPlace(`${sellerName} ${addressQuery}`)) : Promise.resolve(null);
 
     const results = await Promise.allSettled([...corePromises, mapsPromise]);
 
@@ -60,7 +61,7 @@ async function startInvestigation(req, res) {
     let reviews = null;
     if (mapsResults && Array.isArray(mapsResults) && mapsResults.length > 0 && mapsResults[0].data_id) {
       try {
-        reviews = await getMapsReviews(mapsResults[0].data_id);
+        reviews = await withTimeout(getMapsReviews(mapsResults[0].data_id));
       } catch (e) {
         reviews = null; // non-fatal, presence score still works without review text
       }
