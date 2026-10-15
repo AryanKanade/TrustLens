@@ -1,8 +1,19 @@
 const mysql = require('mysql2/promise');
-
-// database connection
 const fs = require('fs');
 const path = require('path');
+
+function getSslCert() {
+  // On Render (and anywhere using env-based cert), DB_SSL_CA holds the cert content directly
+  if (process.env.DB_SSL_CA) {
+    return process.env.DB_SSL_CA;
+  }
+  // Locally, fall back to the file on disk
+  const localCertPath = path.join(__dirname, 'aiven-ca.pem');
+  if (fs.existsSync(localCertPath)) {
+    return fs.readFileSync(localCertPath);
+  }
+  return undefined;
+}
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -11,7 +22,7 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     ssl: {
-        ca: fs.readFileSync(path.join(__dirname, 'aiven-ca.pem')),
+        ca: getSslCert(),
         rejectUnauthorized: true
     },
     waitForConnections: true,

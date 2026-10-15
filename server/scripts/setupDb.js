@@ -3,6 +3,17 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 
+function getSslCert() {
+  if (process.env.DB_SSL_CA) {
+    return process.env.DB_SSL_CA;
+  }
+  const localCertPath = path.join(__dirname, '..', 'config', 'aiven-ca.pem');
+  if (fs.existsSync(localCertPath)) {
+    return fs.readFileSync(localCertPath);
+  }
+  return undefined;
+}
+
 async function setupDatabase() {
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
@@ -11,7 +22,7 @@ async function setupDatabase() {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     ssl: {
-      ca: fs.readFileSync(path.join(__dirname, '..', 'config', 'aiven-ca.pem')),
+      ca: getSslCert(),
       rejectUnauthorized: true
     },
     multipleStatements: true
