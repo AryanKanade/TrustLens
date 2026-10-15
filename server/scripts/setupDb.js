@@ -6,17 +6,19 @@ const mysql = require('mysql2/promise');
 async function setupDatabase() {
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: {
+      ca: fs.readFileSync(path.join(__dirname, '..', 'config', 'aiven-ca.pem')),
+      rejectUnauthorized: true
+    },
     multipleStatements: true
   });
 
   try {
-    const dbName = process.env.DB_NAME;
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
-    console.log(`Database "${dbName}" ready.`);
-
-    await connection.query(`USE \`${dbName}\`;`);
+    console.log(`Connected to database "${process.env.DB_NAME}".`);
 
     const schemaPath = path.join(__dirname, '..', 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');

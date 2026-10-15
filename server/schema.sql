@@ -1,4 +1,4 @@
-USE trustlens;
+-- USE trustlens;
 
 CREATE TABLE reports (
   id            VARCHAR(36) PRIMARY KEY,
