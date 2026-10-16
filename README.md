@@ -19,6 +19,17 @@ TrustLens checks an Instagram shop's trust before you pay — stolen product pho
 
 ---
 
+## 🌐 Live Demo
+
+**App:** https://trust-lens-beta-ten.vercel.app
+**API:** https://trustlens-qlzc.onrender.com
+
+> **Note:** The live deployment uses free-tier hosting (Render + Aiven), which may 
+> sleep or pause after periods of inactivity. If the live link doesn't respond 
+> immediately, please allow 30-60 seconds for the services to wake up, or refer to 
+> the demo video and local setup instructions below, which reliably show full 
+> functionality.
+
 ## 🧩 The Problem
 
 Every day, thousands of Indian shoppers buy from Instagram shops — small sellers with no storefront, no reviews platform, and no easy way to verify if they're real. Stolen product photos, inflated prices, and fly-by-night accounts cost real people real money, and there's no quick way to check before paying.
